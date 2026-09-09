@@ -1,12 +1,14 @@
 package com.homelexin.controller;
 
 import com.homelexin.dto.JobDTO;
+import com.homelexin.dto.JobCreateUpdateDTO;
 import com.homelexin.dto.JobStatusUpdateDTO;
 import com.homelexin.entity.User;
 import com.homelexin.service.JobService;
 import com.homelexin.exception.ResourceNotFoundException;
 import com.homelexin.exception.UnauthorizedException;
 import com.homelexin.exception.InvalidOperationException;
+import com.homelexin.exception.BusinessLogicException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +27,7 @@ public class JobController {
     @GetMapping
     public ResponseEntity<List<JobDTO>> getAllJobs(
             @RequestAttribute("currentUser") User currentUser) {
-        List<JobDTO> jobs = jobService.getJobsByUser(currentUser);
+        List<JobDTO> jobs = jobService.getAllJobs();
         return ResponseEntity.ok(jobs);
     }
 
@@ -45,10 +47,10 @@ public class JobController {
 
     @PostMapping
     public ResponseEntity<JobDTO> createJob(
-            @Valid @RequestBody JobDTO jobDTO,
+            @Valid @RequestBody JobCreateUpdateDTO jobDTO,
             @RequestAttribute("currentUser") User currentUser) {
         try {
-            JobDTO createdJob = jobService.createJob(jobDTO, currentUser);
+            JobDTO createdJob = jobService.createJob(currentUser.getId(), jobDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdJob);
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -60,7 +62,7 @@ public class JobController {
     @PutMapping("/{id}")
     public ResponseEntity<JobDTO> updateJob(
             @PathVariable Long id,
-            @Valid @RequestBody JobDTO jobDTO,
+            @Valid @RequestBody JobCreateUpdateDTO jobDTO,
             @RequestAttribute("currentUser") User currentUser) {
         try {
             JobDTO updatedJob = jobService.updateJob(id, jobDTO, currentUser);
@@ -98,7 +100,7 @@ public class JobController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (InvalidOperationException e) {
+        } catch (InvalidOperationException | BusinessLogicException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
@@ -109,13 +111,13 @@ public class JobController {
             @Valid @RequestBody JobStatusUpdateDTO statusUpdateDTO,
             @RequestAttribute("currentUser") User currentUser) {
         try {
-            JobDTO updatedJob = jobService.updateJobStatus(id, statusUpdateDTO.getStatus(), currentUser);
+            JobDTO updatedJob = jobService.updateJobStatus(id, statusUpdateDTO, currentUser);
             return ResponseEntity.ok(updatedJob);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (InvalidOperationException e) {
+        } catch (InvalidOperationException | BusinessLogicException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }

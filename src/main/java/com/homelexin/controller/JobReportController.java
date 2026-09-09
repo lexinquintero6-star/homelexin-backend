@@ -1,11 +1,12 @@
 package com.homelexin.controller;
 
 import com.homelexin.dto.JobReportDTO;
+import com.homelexin.dto.JobReportCreateUpdateDTO;
 import com.homelexin.entity.User;
 import com.homelexin.service.JobReportService;
 import com.homelexin.exception.ResourceNotFoundException;
 import com.homelexin.exception.UnauthorizedException;
-import com.homelexin.exception.DuplicateResourceException;
+import com.homelexin.exception.ResourceAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class JobReportController {
     @PostMapping
     public ResponseEntity<JobReportDTO> createJobReport(
             @PathVariable Long jobId,
-            @Valid @RequestBody JobReportDTO jobReportDTO,
+            @Valid @RequestBody JobReportCreateUpdateDTO jobReportDTO,
             @RequestAttribute("currentUser") User currentUser) {
         try {
             JobReportDTO createdReport = jobReportService.createJobReport(jobId, jobReportDTO, currentUser);
@@ -46,7 +47,7 @@ public class JobReportController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (UnauthorizedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (DuplicateResourceException e) {
+        } catch (ResourceAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
@@ -54,7 +55,7 @@ public class JobReportController {
     @PutMapping
     public ResponseEntity<JobReportDTO> updateJobReport(
             @PathVariable Long jobId,
-            @Valid @RequestBody JobReportDTO jobReportDTO,
+            @Valid @RequestBody JobReportCreateUpdateDTO jobReportDTO,
             @RequestAttribute("currentUser") User currentUser) {
         try {
             JobReportDTO updatedReport = jobReportService.updateJobReport(jobId, jobReportDTO, currentUser);

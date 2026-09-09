@@ -2,6 +2,7 @@ package com.homelexin.controller;
 
 import com.homelexin.dto.JobPhotoDTO;
 import com.homelexin.entity.User;
+import com.homelexin.entity.JobPhoto;
 import com.homelexin.service.JobPhotoService;
 import com.homelexin.exception.ResourceNotFoundException;
 import com.homelexin.exception.UnauthorizedException;
@@ -25,7 +26,7 @@ public class JobPhotoController {
             @PathVariable Long jobId,
             @RequestAttribute("currentUser") User currentUser) {
         try {
-            List<JobPhotoDTO> photos = jobPhotoService.getJobPhotos(jobId, currentUser);
+            List<JobPhotoDTO> photos = jobPhotoService.getPhotosByJob(jobId, currentUser);
             return ResponseEntity.ok(photos);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -40,7 +41,12 @@ public class JobPhotoController {
             @Valid @RequestBody JobPhotoDTO jobPhotoDTO,
             @RequestAttribute("currentUser") User currentUser) {
         try {
-            JobPhotoDTO uploadedPhoto = jobPhotoService.uploadJobPhoto(jobId, jobPhotoDTO, currentUser);
+            JobPhotoDTO uploadedPhoto = jobPhotoService.createJobPhoto(
+                    jobId,
+                    jobPhotoDTO.getUrl(),
+                    jobPhotoDTO.getType(),
+                    currentUser
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(uploadedPhoto);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -55,7 +61,7 @@ public class JobPhotoController {
             @PathVariable Long photoId,
             @RequestAttribute("currentUser") User currentUser) {
         try {
-            jobPhotoService.deleteJobPhoto(jobId, photoId, currentUser);
+            jobPhotoService.deleteJobPhoto(photoId, currentUser);
             return ResponseEntity.noContent().build();
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

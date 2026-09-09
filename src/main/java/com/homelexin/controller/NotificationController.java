@@ -22,15 +22,23 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<NotificationDTO>> getAllNotifications(
             @RequestAttribute("currentUser") User currentUser) {
-        List<NotificationDTO> notifications = notificationService.getUserNotifications(currentUser);
-        return ResponseEntity.ok(notifications);
+        try {
+            List<NotificationDTO> notifications = notificationService.getUserNotifications(currentUser.getId(), currentUser);
+            return ResponseEntity.ok(notifications);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     @GetMapping("/unread")
     public ResponseEntity<List<NotificationDTO>> getUnreadNotifications(
             @RequestAttribute("currentUser") User currentUser) {
-        List<NotificationDTO> unreadNotifications = notificationService.getUserUnreadNotifications(currentUser);
-        return ResponseEntity.ok(unreadNotifications);
+        try {
+            List<NotificationDTO> unreadNotifications = notificationService.getUnreadNotifications(currentUser.getId(), currentUser);
+            return ResponseEntity.ok(unreadNotifications);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     @PutMapping("/{id}/read")
@@ -50,8 +58,12 @@ public class NotificationController {
     @PutMapping("/read-all")
     public ResponseEntity<Void> markAllNotificationsAsRead(
             @RequestAttribute("currentUser") User currentUser) {
-        notificationService.markAllAsRead(currentUser);
-        return ResponseEntity.noContent().build();
+        try {
+            notificationService.markAllAsRead(currentUser.getId(), currentUser);
+            return ResponseEntity.noContent().build();
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
     @DeleteMapping("/{id}")
